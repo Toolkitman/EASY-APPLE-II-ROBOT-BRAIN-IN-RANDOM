@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('C:\pexels-angela-roma-7479746.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+    .chatbox {
+      width: 100%;
+      max-width: 600px;
+      margin: 50px auto;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .chatbox .output {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      height: 200px;
+      overflow-y: auto;
+      color: white;
+    }
+    .button {
+      padding: 10px 15px;
+      border: none;
+      background: #007BFF;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbox">
+    <h1>Chatbot</h1>
+    <div id="output" class="output">Welcome! Start speaking, I'm listening...</div>
+  </div>
+
+  <script>
+    // Initialize variables
+    const output = document.getElementById('output');
+    const questions = [
+      "ARE YOU OK?",
+      "DO YOU LIVE IN GERMANY?",
+      "DO YOU LIKE FOOTBALL?",
+      "DO YOU WANT A DRINK?",
+      "DO YOU WANT A SNACK?",
+      "ARE YOU TIRED?"
+    ];
+
+    // Initialize speech recognition
+    let recognition;
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+    } else if ('SpeechRecognition' in window) {
+      recognition = new SpeechRecognition();
+    } else {
+      alert('Speech recognition not supported in this browser.');
+    }
+
+    if (recognition) {
+      recognition.lang = 'en-US';
+      recognition.continuous = true; // Keep listening continuously
+      recognition.interimResults = false;
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim();
+        output.innerHTML += `<strong>You:</strong> ${transcript}<br>`;
+        processMessage(transcript.toUpperCase());
+      };
+
+      recognition.onerror = function(event) {
+        output.innerHTML += `<strong>Bot:</strong> I couldn't hear you. Please try again.<br>`;
+        console.error('Speech recognition error:', event);
+      };
+
+      recognition.onend = function() {
+        // Restart recognition when it stops
+        recognition.start();
+      };
+
+      recognition.start();
+    }
+
+    // Function to process the user's message
+    function processMessage(message) {
+      message = message.trim().toUpperCase();
+      let response = "I didn't understand that.";
+      if (message.includes("WHAT IS THE SUM OF")) {
+        const a = parseInt(prompt("Enter the first number:"));
+        const b = parseInt(prompt("Enter the second number:"));
+        response = `The sum of ${a} and ${b} is ${a + b}.`;
+      } else {
+        switch (message) {
+          case "I'M NOT SURE":
+            response = "OK, we will see later.";
+            break;
+          case "YES":
+          case "SURE":
+          case "I KNOW":
+          case "I CARE":
+            response = "OK!";
+            break;
+          case "I WILL CATCH UP":
+            response = "Yes for sure!";
+            break;
+          case "I DON'T KNOW":
+            response = "Oh, sorry!";
+            break;
+          case "I DON'T CARE":
+            response = "Really?";
+            break;
+          case "I DON'T WANT IT":
+            response = "No problem.";
+            break;
+          case "NO":
+            response = "OK!";
+            break;
+          default:
+            response = questions[Math.floor(Math.random() * questions.length)];
+        }
+      }
+      output.innerHTML += `<strong>Bot:</strong> ${response}<br>`;
+      speak(response);
+    }
+
+    // Function to use Text-to-Speech
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = function () {
+          if (recognition) {
+            recognition.start(); // Restart recognition after speaking
+          }
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  </script>
+</body>
+</html>

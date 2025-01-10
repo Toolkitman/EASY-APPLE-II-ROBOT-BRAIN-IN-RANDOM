@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot with Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://via.placeholder.com/1920x1080') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+    .chatbox {
+      width: 100%;
+      max-width: 600px;
+      margin: 50px auto;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .chatbox .output {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      height: 200px;
+      overflow-y: auto;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbox">
+    <h1>Chatbot with Search</h1>
+    <div id="output" class="output">Welcome! Start speaking, I'm listening...</div>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const questions = [
+      "ARE YOU OK?",
+      "DO YOU LIVE IN GERMANY?",
+      "DO YOU LIKE FOOTBALL?",
+      "DO YOU WANT A DRINK?",
+      "DO YOU WANT A SNACK?",
+      "ARE YOU TIRED?"
+    ];
+
+    let recognition;
+    let isSpeaking = false;
+
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+    } else if ('SpeechRecognition' in window) {
+      recognition = new SpeechRecognition();
+    } else {
+      alert('Speech recognition not supported in this browser.');
+    }
+
+    if (recognition) {
+      recognition.lang = 'en-US';
+      recognition.continuous = false; // Single recognition session
+      recognition.interimResults = false;
+
+      recognition.onresult = function(event) {
+        let transcript = event.results[0][0].transcript.trim();
+        transcript = transcript.replace(/[^\w\s]/gi, '').toUpperCase(); // Normalize input
+        console.log("User said:", transcript); // Debug
+        output.innerHTML += `<strong>You:</strong> ${transcript}<br>`;
+        processMessage(transcript);
+      };
+
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          output.innerHTML += `<strong>Bot:</strong> I didn't hear anything. Please try again.<br>`;
+        }
+      };
+
+      recognition.onend = function() {
+        if (!isSpeaking) {
+          recognition.start(); // Restart listening automatically
+        }
+      };
+
+      recognition.start();
+    }
+
+    async function processMessage(message) {
+      let response = "";
+
+      if (message.includes("SEARCH FOR")) {
+        const query = message.replace("SEARCH FOR", "").trim();
+        response = await performSearch(query);
+      } else if (message.includes("WHAT IS THE SUM OF")) {
+        const a = parseInt(prompt("Enter the first number:"));
+        const b = parseInt(prompt("Enter the second number:"));
+        response = `The sum of ${a} and ${b} is ${a + b}.`;
+      } else if (message === "IM NOT SURE") {
+        response = "OK, we will see later.";
+      } else if (["YES", "SURE", "I KNOW", "I CARE"].includes(message)) {
+        response = "OK!";
+      } else if (message === "I WILL CATCH UP") {
+        response = "Yes for sure!";
+      } else if (message === "I DONT KNOW") {
+        response = "Oh, sorry!";
+      } else if (message === "I DONT CARE") {
+        response = "Really?";
+      } else if (message === "I DONT WANT IT") {
+        response = "No problem.";
+      } else if (message === "NO") {
+        response = "OK!";
+      } else {
+        response = questions[Math.floor(Math.random() * questions.length)];
+      }
+
+      // Display and speak the response
+      output.innerHTML += `<strong>Bot:</strong> ${response}<br>`;
+      speakAndAsk(response);
+    }
+
+    async function performSearch(query) {
+      try {
+        const apiKey = 'YOUR_BING_API_KEY_HERE'; // Replace with your Bing API key
+        const endpoint = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(query)}`;
+        const response = await fetch(endpoint, {
+          headers: { 'Ocp-Apim-Subscription-Key': apiKey }
+        });
+        const data = await response.json();
+
+        if (data.webPages && data.webPages.value.length > 0) {
+          const firstResult = data.webPages.value[0];
+          return `I found this: ${firstResult.name} - ${firstResult.snippet}. You can read more here: ${firstResult.url}`;
+        } else {
+          return "I couldn't find any results for your query.";
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        return "Sorry, there was an error performing the search.";
+      }
+    }
+
+    function speakAndAsk(text) {
+      if ('speechSynthesis' in window) {
+        isSpeaking = true;
+        recognition.stop(); // Stop listening during speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = function () {
+          isSpeaking = false;
+          askQuestion(); // Ask next question after speaking
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function askQuestion() {
+      const nextQuestion = questions[Math.floor(Math.random() * questions.length)];
+      output.innerHTML += `<strong>Bot:</strong> ${nextQuestion}<br>`;
+      speak(nextQuestion);
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = function () {
+          recognition.start(); // Resume listening after question
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  </script>
+</body>
+</html>

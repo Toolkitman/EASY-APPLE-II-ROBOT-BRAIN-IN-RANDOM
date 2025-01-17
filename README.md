@@ -13,3 +13,9 @@ code to paste in your apple ii dos prompt:
 80 IF F$ = "YES" THEN PRINT "OK"
 90 IF F$ <> "YES" THEN PRINT "OH NOOOO!"
 100 GOTO 10 :CLEAR
+
+Dichiara la Proprietà Intellettuale:
+
+il progetto è basato su codice originale mio, convertito e migliorato con l'aiuto di strumenti di intelligenza artificiale.
+Puoi aggiungere una frase come:
+"Il progetto originale è stato scritto in AppleSoft Basic da me e successivamente convertito in HTML con il supporto di ChatGPT."

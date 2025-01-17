@@ -19,3 +19,5 @@ Dichiarazione di Proprietà Intellettuale:
 il progetto è basato su codice originale mio, convertito e migliorato con l'aiuto di strumenti di intelligenza artificiale.
 
 "Il progetto originale è stato scritto in AppleSoft Basic da me e successivamente convertito in HTML con il supporto di ChatGPT."
+
+Immagine freecopyright di nome riportato sul file e freeware.
